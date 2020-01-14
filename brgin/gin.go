@@ -12,7 +12,7 @@ import (
 func Mount(option ...brbundle.WebOption) gin.HandlerFunc {
 	o := websupport.InitOption(option)
 
-	return func (c *gin.Context) {
+	return func(c *gin.Context) {
 		var p string
 		if o.SPAFallback == "" {
 			p = c.Param("filepath")

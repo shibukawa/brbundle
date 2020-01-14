@@ -48,4 +48,3 @@ func Mount(option ...brbundle.WebOption) func(echo.Context) error {
 		return nil
 	}
 }
-

@@ -12,7 +12,7 @@ import (
 func Mount(option ...brbundle.WebOption) http.HandlerFunc {
 	o := websupport.InitOption(option)
 
-	return func (w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		p := chi.URLParam(r, "*")
 
 		file, found, redirectDir := websupport.FindFile(p, o)

@@ -3,15 +3,15 @@ package brfasthttp
 import (
 	"io"
 
-	"github.com/valyala/fasthttp"
 	"github.com/shibukawa/brbundle"
 	"github.com/shibukawa/brbundle/websupport"
+	"github.com/valyala/fasthttp"
 )
 
 func Mount(option ...brbundle.WebOption) fasthttp.RequestHandler {
 	o := websupport.InitOption(option)
 
-	return func (ctx *fasthttp.RequestCtx) {
+	return func(ctx *fasthttp.RequestCtx) {
 		p, ok := ctx.UserValue("filepath").(string)
 		if !ok {
 			p = string(ctx.Path())

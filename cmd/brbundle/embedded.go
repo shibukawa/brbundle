@@ -91,27 +91,42 @@ func embedded(brotli bool, encryptionKey []byte, buildTag, packageName string, d
 	return nil
 }
 
-func splitByte(src []byte, length int) []string {
-	var result []string
+var printable map[byte]bool
+var printableEsc = map[byte]string{
+	'\t': `\t`,
+	'\n': `\n`,
+	'\\': `\\`,
+	'"':  `\"`,
+}
 
-	str := fmt.Sprintf("%#v", string(src))
-	str = str[1 : len(str)-1]
-	start := 0
-	for i := 0; i < len(str)-3; i++ {
-		if i-start > length {
-			result = append(result, str[start:i])
-			start = i
+func init() {
+	printable = make(map[byte]bool)
+	printableChars := " !#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+	for _, c := range printableChars {
+		printable[byte(c)] = true
+	}
+}
+
+func splitByte(src []byte, splitLength int) []string {
+	var builder strings.Builder
+	var result []string
+	for _, c := range src {
+		if printable[c] {
+			builder.WriteByte(c)
+		} else if esc, ok := printableEsc[c]; ok {
+			builder.WriteString(esc)
+		} else {
+			fmt.Fprintf(&builder, "\\x%02x", c)
 		}
-		if str[i:i+2] == `\x` {
-			i += 3
-		} else if str[i:i+2] == `\u` {
-			i += 5
-		} else if str[i:i+1] == `\` {
-			i += 1
+		if builder.Len() > splitLength {
+			result = append(result, builder.String())
+			builder.Reset()
 		}
 	}
-	result = append(result, str[start:])
-
+	if builder.Len() > 0 {
+		result = append(result, builder.String())
+		builder.Reset()
+	}
 	return result
 }
 
@@ -123,7 +138,7 @@ func formatContent(src []byte, length int) string {
 	}
 	switch len(quoted) {
 	case 0:
-		return "[]byte(\"\")"
+		return "[]byte{}"
 	case 1:
 		return fmt.Sprintf("[]byte(%s)", quoted[0])
 	default:
